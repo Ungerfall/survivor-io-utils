@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Color Grid with Radio Buttons</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 50px);
+            grid-gap: 5px;
+        }
+        .grid-item {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+        }
+        .color-selector {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="grid-container">
+    <script>
+        for(let i = 0; i < 63; i++) {
+            document.write('<div class="grid-item" onclick="colorCell(this)"></div>');
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const startCell = document.querySelector('.grid-container').children[4 * 7 + 4];
+            startCell.style.backgroundColor = 'yellow';
+            startCell.innerHTML = '<span style="display:flex; justify-content:center; align-items:center; height:100%;">Start</span>';
+        });
+    </script>
+</div>
+
+<!-- Color selection as radio buttons -->
+<div class="color-selector">
+    <input type="radio" id="white" name="color" value="white" checked>
+    <label for="white">White</label>
+
+    <input type="radio" id="lightblue" name="color" value="lightblue">
+    <label for="lightblue">Lightblue</label>
+
+    <input type="radio" id="purple" name="color" value="purple">
+    <label for="purple">Purple</label>
+
+    <input type="radio" id="red" name="color" value="red">
+    <label for="red">Red</label>
+</div>
+
+<button onclick="calculate()">Calculate</button>
+<p>To reset, refresh the page.</p>
+
+<script>
+    var currentColor = 'white'; // Default color
+
+    // Listen for changes in the radio group to update the current color
+    document.querySelectorAll('input[name="color"]').forEach((elem) => {
+        elem.addEventListener('change', function(event) {
+            currentColor = event.target.value;
+        });
+    });
+
+    function colorCell(cell) {
+        if (cell.style.backgroundColor === 'yellow') return; // Prevent coloring if the cell is the starting cell
+
+        switch(currentColor) {
+            case 'white':
+                cell.style.backgroundColor = 'white';
+                break;
+            case 'lightblue':
+                cell.style.backgroundColor = 'lightblue';
+                break;
+            case 'purple':
+                cell.style.backgroundColor = 'purple';
+                break;
+            case 'red':
+                cell.style.backgroundColor = 'red';
+                break;
+            default:
+                cell.style.backgroundColor = 'white';
+        }
+    }
+
+    function calculate() {
+        const gridItems = document.querySelectorAll('.grid-item');
+        const rows = 9;
+        const cols = 7;
+        const startX = 3;
+        const startY = 4;
+        let scoreMatrix = [];
+        for(let i = 0; i < rows; i++) {
+            let row = [];
+            for(let j = 0; j < cols; j++) {
+                const index = i * cols + j;
+                const color = gridItems[index].style.backgroundColor;
+                switch(color) {
+                    case 'white':
+                        row.push(0);
+                        break;
+                    case 'lightblue':
+                        row.push(1);
+                        break;
+                    case 'purple':
+                        row.push(2);
+                        break;
+                    case 'red':
+                        row.push(3);
+                        break;
+                    default:
+                        row.push(0);
+                }
+            }
+            scoreMatrix.push(row);
+        }
+
+        let bestScore = -1;
+        let bestPath = Array.from({ length: rows }, () => new Array(cols).fill(0));
+        let currentPath = Array.from({ length: rows }, () => new Array(cols).fill(0));
+        function dfs(x, y, turns, score) {
+            if (turns > 15 || x < 0 || y < 0 || x >= cols || y >= rows) return;
+            if (currentPath[y][x] === 1) return; // Prevent revisiting the same cell in the current path
+            currentPath[y][x] = 1;
+            score += scoreMatrix[y][x];
+
+            if (score > bestScore) {
+                bestScore = score;
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        bestPath[i][j] = currentPath[i][j];
+                    }
+                }
+            }
+
+            // Explore all four directions
+            dfs(x + 1, y, turns + 1, score); // Right
+            dfs(x - 1, y, turns + 1, score); // Left
+            dfs(x, y + 1, turns + 1, score); // Down
+            dfs(x, y - 1, turns + 1, score); // Up
+
+            // Backtrack
+            currentPath[y][x] = 0;
+        }
+
+        dfs(startX, startY, 0, 0, currentPath);
+        function highlighBestPath(bestPath) {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (bestPath[i][j] === 1) {
+                        const index = i * cols + j;
+                        gridItems[index].style.backgroundColor = 'yellow';
+                    }
+                }
+            }
+        }
+
+        highlighBestPath(bestPath);
+    }
+</script>
+
+</body>
+</html>
