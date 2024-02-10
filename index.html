@@ -122,8 +122,8 @@
         let currentPath = Array.from({ length: rows }, () => new Array(cols).fill(0));
         function dfs(x, y, turns, score) {
             if (turns > 15 || x < 0 || y < 0 || x >= cols || y >= rows) return;
-            if (currentPath[y][x] === 1) return; // Prevent revisiting the same cell in the current path
-            currentPath[y][x] = 1;
+            if (currentPath[y][x] >= 1) return; // Prevent revisiting the same cell in the current path
+            currentPath[y][x] = turns;
             score += scoreMatrix[y][x];
 
             if (score > bestScore) {
@@ -150,9 +150,10 @@
         function highlighBestPath(bestPath) {
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < cols; j++) {
-                    if (bestPath[i][j] === 1) {
+                    if (bestPath[i][j] >= 1) {
                         const index = i * cols + j;
                         gridItems[index].style.backgroundColor = 'yellow';
+                        gridItems[index].innerHTML = `<span style="display:flex; justify-content:center; align-items:center; height:100%;">${bestPath[i][j]}</span>`;
                     }
                 }
             }
